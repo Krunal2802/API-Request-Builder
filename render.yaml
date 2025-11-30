@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: api-code-generator
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    branch: main
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHONPATH
+        value: /app
+    buildCommand: ""
+    startCommand: ""
