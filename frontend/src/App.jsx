@@ -3,7 +3,7 @@ import axios from 'axios'
 import InputSection from './components/InputSection'
 import OutputSection from './components/OutputSection'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api-request-builder.onrender.com'
 
 function App() {
   const [apiSpec, setApiSpec] = useState({
