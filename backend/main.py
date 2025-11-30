@@ -29,9 +29,10 @@ static_dir = "static"
 if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-@app.get("/")
-async def root():
-    return {"message": "API Code Generator is running"}
+# API Routes
+@app.get("/api/health")
+async def health_check():
+    return {"message": "API Code Generator is running", "status": "healthy"}
 
 @app.post("/api/generate-code", response_model=CodeGenerationResponse)
 async def generate_code(spec: APISpecification):
@@ -80,15 +81,32 @@ async def generate_code(spec: APISpecification):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating code: {str(e)}")
 
-# Serve frontend for production
-@app.get("/{full_path:path}")
-async def serve_frontend(full_path: str):
-    """Serve frontend files in production."""
+# Root route for health check
+@app.get("/")
+async def root():
+    """Root endpoint - serves frontend or health check."""
     static_dir = "static"
     if os.path.exists(static_dir):
-        file_path = os.path.join(static_dir, full_path)
-        if os.path.exists(file_path) and os.path.isfile(file_path):
-            return FileResponse(file_path)
+        return FileResponse(os.path.join(static_dir, "index.html"))
+    return {"message": "API Code Generator is running"}
+
+# Serve static assets
+@app.get("/assets/{file_path:path}")
+async def serve_assets(file_path: str):
+    """Serve static assets."""
+    static_dir = "static"
+    if os.path.exists(static_dir):
+        asset_path = os.path.join(static_dir, "assets", file_path)
+        if os.path.exists(asset_path) and os.path.isfile(asset_path):
+            return FileResponse(asset_path)
+    raise HTTPException(status_code=404, detail="Asset not found")
+
+# Catch-all for frontend routing (must be last)
+@app.get("/{full_path:path}")
+async def serve_frontend(full_path: str):
+    """Serve frontend files for client-side routing."""
+    static_dir = "static"
+    if os.path.exists(static_dir):
         # Return index.html for client-side routing
         return FileResponse(os.path.join(static_dir, "index.html"))
     return {"message": "Frontend not available in development mode"}

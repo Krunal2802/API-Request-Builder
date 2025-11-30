@@ -3,7 +3,23 @@ import axios from 'axios'
 import InputSection from './components/InputSection'
 import OutputSection from './components/OutputSection'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api-request-builder.onrender.com'
+// Determine API base URL based on environment
+const getApiBaseUrl = () => {
+  // If VITE_API_URL is explicitly set, use it
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL
+  }
+  
+  // In production (when served from same domain), use relative URLs
+  if (import.meta.env.PROD) {
+    return ''
+  }
+  
+  // Development fallback
+  return 'http://localhost:8000'
+}
+
+const API_BASE_URL = getApiBaseUrl()
 
 function App() {
   const [apiSpec, setApiSpec] = useState({
@@ -91,6 +107,11 @@ function App() {
     setLoading(true)
     setError(null)
     
+    // Debug logging
+    console.log('API_BASE_URL:', API_BASE_URL)
+    console.log('Environment:', import.meta.env.MODE)
+    console.log('Is Production:', import.meta.env.PROD)
+    
     try {
       // Convert headers and query_params arrays to objects
       const headers = {}
@@ -121,7 +142,11 @@ function App() {
         query_params: Object.keys(query_params).length > 0 ? query_params : null
       }
       
-      const response = await axios.post(`${API_BASE_URL}/api/generate-code`, payload)
+      const apiUrl = `${API_BASE_URL}/api/generate-code`
+      console.log('Making API call to:', apiUrl)
+      console.log('Payload:', payload)
+      
+      const response = await axios.post(apiUrl, payload)
       setGeneratedCode(response.data)
     } catch (err) {
       if (err.response) {
